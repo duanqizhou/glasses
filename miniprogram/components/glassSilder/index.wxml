@@ -1,0 +1,61 @@
+<!--components/glassSilder/index.wxml-->
+<wxs src="../../utils/util.wxs" module="tools" />
+<view class="main-contain">
+    <view class="row-wrap">
+        <view class="first-head">
+            <text>柱镜</text>
+        </view>
+        <view class="computer"></view>
+        <scroll-view class="scrollViewX" scroll-with-animation="true" enable-passive="true" enhanced="true" scroll-x="true" scroll-into-view="{{scrollIntoView}}" binddragend="binddragendHandle">
+            <view wx:for="{{list}}" wx:for-index="sindex" id="{{item.id}}" data-idindex="{{sindex}}" bindtap="sliderClickHandle" wx:for-item="item">{{item.text}} <text wx:if="{{selectList[item.text].length}}" class="poptip">{{tools.getCurrentRowAllNum(selectList[item.text])}}</text>
+            </view>
+            <view></view>
+            <view></view>
+        </scroll-view>
+
+    </view>
+    <view class="col-wrap">
+        <scroll-view class="scrollView" scroll-y="true">
+            <view class="item">
+                <view class="select">
+                    <checkbox class="checkbox" value="{{item.name}}" checked="{{item.checked}}" />
+                    <text>球镜</text>
+                </view>
+
+            </view>
+            <checkbox-group bindchange="checkboxChange">
+                <view wx:for="{{colList}}" wx:for-index="index" class="item {{tools.isSelect(selectList[currentRow],item) ? 'active' : ''}}">
+                    <view class="select">
+                        <checkbox class="checkbox" value="{{item + ',' + currentRow}}" checked="{{tools.isSelect(selectList[currentRow],item)}}" />
+                        <text>{{item}}</text>
+                    </view>
+                    <view class="select2 flex1"><text>{{currentRow}}</text></view>
+                    <view class="store flex1"><text>库存：100</text></view>
+                    <view class="step flex1 flex-c-c">
+                        <text>+</text>
+                        <input class="input" data-col="{{item}}" bindinput="changeMatrixNum" value="{{matrixList[index][currentRowIndex].num}}" type="number" />
+                        <text>-</text>
+
+                    </view>
+
+                </view>
+            </checkbox-group>
+
+        </scroll-view>
+    </view>
+    <view class="showInfo">
+        <text>球镜</text>
+        <text>柱镜</text>
+        <text>数量</text>
+    </view>
+    <view wx:for="{{selectListHead}}">
+
+        <view class="showInfo" wx:for="{{selectList[item]}}" wx:for-item="citem">
+        <text>{{citem.row}}</text>
+        <text>{{citem.col}}</text>
+        <text>{{citem.num}}</text>
+        </view>
+
+    </view>
+
+</view>

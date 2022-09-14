@@ -1,0 +1,40 @@
+function isSelect (list,row){
+    if(!list || list.length <= 0) return false;
+    for (var index = 0; index < list.length; index++) {
+        var colitem = list[index];
+        if(colitem.row == row){
+            return colitem.select
+        }
+    }
+    return false
+}
+function getSelectNum (list,row){
+    if(!list || list.length <= 0) return false;
+    for (var index = 0; index < list.length; index++) {
+        var colitem = list[index];
+        if(colitem.row == row){
+            return colitem.select
+        }
+    }
+    return false
+}
+function getCurrentRowAllNum (list){
+    console.log(count,'count')
+
+    if(!list || list.length <= 0) return 0;
+    var count = 0;
+    for (var index = 0; index < list.length; index++) {
+        var colitem = list[index];
+        if(colitem.num > 0){
+            count += colitem.num
+        }
+    }
+    console.log(count,'count')
+    return count
+}
+
+module.exports = {
+    isSelect: isSelect,
+    getSelectNum:getSelectNum,
+    getCurrentRowAllNum:getCurrentRowAllNum
+  };

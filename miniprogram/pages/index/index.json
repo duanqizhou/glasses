@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "glass-silder":"/components/glassSilder/index"
+  }
+}
