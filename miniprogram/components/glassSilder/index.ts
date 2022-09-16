@@ -1,7 +1,7 @@
 // components/glassSilder/index.ts
 interface listFace {
     id: string,
-    text: string | number,
+    text: string,
     left: number,
     right: number
 }
@@ -16,7 +16,8 @@ interface selectListFace {
 interface dataFace {
     [x: string]: any
     list: listFace[] | [],
-    selectList: selectListFace
+    selectList: selectListFace,
+    currentRow:string
 }
 interface getXY {
     x: number
@@ -33,6 +34,7 @@ Component<dataFace, any, any>({
         rowList: ['0.00', '0.25', '0.50', '0.75', '1.00'],
         selectListHead:[],
         sliderLock:false,
+        selectAll:false
 
     },
     lifetimes: {
@@ -41,6 +43,38 @@ Component<dataFace, any, any>({
         },
     },
     methods: {
+        selectAllHandle(e:WechatMiniprogram.CustomEvent){
+            const that = this;
+            const value = e.detail.value[0]
+            const selectList = JSON.parse(JSON.stringify(that.data.selectList))
+            const selectListHead = that.data.selectListHead
+            if(value){
+                const _index = that.data.rowList.indexOf(value)
+                if(_index == -1) return;
+                const tempSelectList: selectListCFace[] = that.data.colList.map((val:string,key:number)=>({
+                    row:val,
+                    col:value,
+                    num:that.data.matrixList[key][_index].num,
+                    select: true,
+                }))
+                selectList[that.data.currentRow] = tempSelectList
+                selectListHead.push(that.data.currentRow)
+                that.setData({
+                    selectAll:true,
+                })
+            }else{
+                // 取消全选
+                selectList[that.data.currentRow] = []
+                selectListHead.splice(selectListHead.indexOf(that.data.currentRow),1)
+                that.setData({
+                    selectAll:false,
+                })
+            }
+            that.setData({
+                selectList,
+                selectListHead:[...new Set(selectListHead)]
+            })
+        },
         InitData(): void {
             this.initSilderRow()
             this.initMatrixList()
@@ -97,14 +131,36 @@ Component<dataFace, any, any>({
                 y: colIndex
             }
         },
-        setMatrixListXY(row: string, col: string, num: number = 1): void {
+        updateSelectList(row: string, col: string,num:number|string):void{
+            const selectList = JSON.parse(JSON.stringify(this.data.selectList))
+            col = this.data.rowList[col]
+            row = this.data.colList[row]
 
+            const disposeList = selectList[col]
+
+            if(disposeList && Array.isArray(disposeList)){
+
+                for (let index = 0; index < disposeList.length; index++) {
+                    const currentItem = disposeList[index];
+                    if(currentItem.row == row){
+                        currentItem.num = num
+                        this.setData({
+                            selectList
+                        })
+                        return
+                    }
+                }
+
+            }
+        },
+        setMatrixListXY(x: string, y: string, num: number = 1): void {
             const matrixList = JSON.parse(JSON.stringify(this.data.matrixList))
-            if (matrixList[row] && matrixList[row][col]) {
+            if (matrixList[x] && matrixList[x][y]) {
                 num = Number(num)
                 if(Number.isNaN(num) || num <= 0) num = 1;
-                matrixList[row][col].num = num
+                matrixList[x][y].num = num
              }
+             this.updateSelectList(x,y,num)
              this.setData({
                 matrixList
              })
@@ -136,8 +192,10 @@ Component<dataFace, any, any>({
             })
         },
         changeMatrixNum(e: WechatMiniprogram.CustomEvent) {
-            const num = e.detail.value
+            var num = e.detail.value
             const col = e.currentTarget.dataset.col;
+            if(num >= 999) num = 999;
+            if(num <= 1) num = 1;
             const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
             this.setMatrixListXY(pos.x,pos.y,num)
         },
@@ -148,7 +206,6 @@ Component<dataFace, any, any>({
                 })
                 return
             }
-            console.log(2)
             const leftOffset = e.detail.scrollLeft
             const list: listFace[] = [...this.data.list]
             if (list.length > 0) {
@@ -157,7 +214,8 @@ Component<dataFace, any, any>({
                     this.setData({
                         scrollIntoView: list[index].id,
                         currentRow: list[index].text,
-                        currentRowIndex: index
+                        currentRowIndex: index,
+                        selectAll:false
                     })
                 }
             }
@@ -169,9 +227,24 @@ Component<dataFace, any, any>({
                 scrollIntoView: this.data.list[idindex].id,
                 currentRow: this.data.list[idindex].text,
                 currentRowIndex: idindex,
-                sliderLock:true
+                sliderLock:true,
+                selectAll:false
             })
 
+        },
+        add(e: WechatMiniprogram.CustomEvent):void{
+            const col = e.currentTarget.dataset.col;
+            const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
+            const _currentNum:number|string = this.data.matrixList[pos.x][pos.y].num
+            if(_currentNum >= 999) return;
+            this.setMatrixListXY(pos.x,pos.y,Number(_currentNum) + 1)
+        },
+        reduce(e: WechatMiniprogram.CustomEvent):void{
+            const col = e.currentTarget.dataset.col;
+            const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
+            const _currentNum:number|string = this.data.matrixList[pos.x][pos.y].num
+            if(_currentNum <= 1) return;
+            this.setMatrixListXY(pos.x,pos.y,Number(_currentNum) - 1)
         }
     }
 })

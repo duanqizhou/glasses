@@ -18,8 +18,11 @@
         <scroll-view class="scrollView" scroll-y="true">
             <view class="item">
                 <view class="select">
-                    <checkbox class="checkbox" value="{{item.name}}" checked="{{item.checked}}" />
+                    <checkbox-group bindchange="selectAllHandle">
+                        <checkbox class="checkbox" value="{{currentRow}}" checked="{{selectAll}}"/>
                     <text>球镜</text>
+                    </checkbox-group>
+                    
                 </view>
 
             </view>
@@ -32,9 +35,9 @@
                     <view class="select2 flex1"><text>{{currentRow}}</text></view>
                     <view class="store flex1"><text>库存：100</text></view>
                     <view class="step flex1 flex-c-c">
-                        <text>+</text>
+                        <text data-col="{{item}}" bindtap="add">+</text>
                         <input class="input" data-col="{{item}}" bindinput="changeMatrixNum" value="{{matrixList[index][currentRowIndex].num}}" type="number" />
-                        <text>-</text>
+                        <text data-col="{{item}}" bindtap="reduce">-</text>
 
                     </view>
 
