@@ -35,9 +35,9 @@
                     <view class="select2 flex1"><text>{{currentRow}}</text></view>
                     <view class="store flex1"><text>库存：100</text></view>
                     <view class="step flex1 flex-c-c">
-                        <text data-col="{{item}}" bindtap="add">+</text>
+                        <text data-col="{{item}}" bindtap="addMatrixNum">+</text>
                         <input class="input" data-col="{{item}}" bindinput="changeMatrixNum" value="{{matrixList[index][currentRowIndex].num}}" type="number" />
-                        <text data-col="{{item}}" bindtap="reduce">-</text>
+                        <text data-col="{{item}}" bindtap="reduceMatrixNum">-</text>
 
                     </view>
 

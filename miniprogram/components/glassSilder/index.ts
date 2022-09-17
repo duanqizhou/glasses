@@ -1,4 +1,4 @@
-// components/glassSilder/index.ts
+// components/glassSilder/index.ts  组件模式
 interface listFace {
     id: string,
     text: string,
@@ -43,34 +43,6 @@ Component<dataFace, any, any>({
         },
     },
     methods: {
-        selectAllHandle(e: WechatMiniprogram.CustomEvent) {
-            const that = this;
-            const value = e.detail.value[0]
-            const selectList = JSON.parse(JSON.stringify(that.data.selectList))
-            const selectListHead = that.data.selectListHead
-            if (value) {
-                const _index = that.data.rowList.indexOf(value)
-                if (_index == -1) return;
-                const tempSelectList: selectListCFace[] = that.data.colList.map((val: string, key: number) => ({
-                    row: val,
-                    col: value,
-                    num: that.data.matrixList[key][_index].num,
-                    select: true,
-                }))
-                selectList[that.data.currentRow] = tempSelectList
-                selectListHead.push(that.data.currentRow)
-            } else {
-                // 取消全选
-                selectList[that.data.currentRow] = []
-                selectListHead.splice(selectListHead.indexOf(that.data.currentRow), 1)
-                that.checkIsSelectAll()
-            }
-            that.setData({
-                selectList,
-                selectListHead: [...new Set(selectListHead)]
-            })
-            that.checkIsSelectAll()
-        },
         InitData(): void {
             this.initSilderRow()
             this.initMatrixList()
@@ -112,9 +84,42 @@ Component<dataFace, any, any>({
                 matrixList
             })
         },
+
+        /*
+            选择操作
+        */
+        // 选择全选
+        selectAllHandle(e: WechatMiniprogram.CustomEvent) {
+            const that = this;
+            const value = e.detail.value[0]
+            const selectList = JSON.parse(JSON.stringify(that.data.selectList))
+            const selectListHead = that.data.selectListHead
+            if (value) {
+                const _index = that.data.rowList.indexOf(value)
+                if (_index == -1) return;
+                const tempSelectList: selectListCFace[] = that.data.colList.map((val: string, key: number) => ({
+                    row: val,
+                    col: value,
+                    num: that.data.matrixList[key][_index].num,
+                    select: true,
+                }))
+                selectList[that.data.currentRow] = tempSelectList
+                selectListHead.push(that.data.currentRow)
+            } else {
+                // 取消全选
+                selectList[that.data.currentRow] = []
+                selectListHead.splice(selectListHead.indexOf(that.data.currentRow), 1)
+                that.checkIsSelectAll()
+            }
+            that.setData({
+                selectList,
+                selectListHead: [...new Set(selectListHead)]
+            })
+            that.checkIsSelectAll()
+        },
+        // 检测全选
         checkIsSelectAll(): void {
             const checkList = this.data.selectList[this.data.currentRow]
-            console.log(checkList,this.data.currentRow,this.data.selectList)
             if (checkList && Array.isArray(checkList) && checkList.length == this.data.colList.length) {
                 this.setData({
                     selectAll: true
@@ -126,55 +131,7 @@ Component<dataFace, any, any>({
             }
 
         },
-        getMatrixListXY(row: string, col: string): getXY {
-            const rowList = this.data.rowList
-            const colList = this.data.colList
-
-            if (rowList.length <= 0 || colList.length <= 0) return {
-                x: -1,
-                y: -1
-            }
-            const rowIndex = colList.indexOf(row)
-            const colIndex = rowList.indexOf(col)
-            return {
-                x: rowIndex,
-                y: colIndex
-            }
-        },
-        updateSelectList(row: string, col: string, num: number | string): void {
-            const selectList = JSON.parse(JSON.stringify(this.data.selectList))
-            col = this.data.rowList[col]
-            row = this.data.colList[row]
-
-            const disposeList = selectList[col]
-
-            if (disposeList && Array.isArray(disposeList)) {
-
-                for (let index = 0; index < disposeList.length; index++) {
-                    const currentItem = disposeList[index];
-                    if (currentItem.row == row) {
-                        currentItem.num = num
-                        this.setData({
-                            selectList
-                        })
-                        return
-                    }
-                }
-
-            }
-        },
-        setMatrixListXY(x: string, y: string, num: number = 1): void {
-            const matrixList = JSON.parse(JSON.stringify(this.data.matrixList))
-            if (matrixList[x] && matrixList[x][y]) {
-                num = Number(num)
-                if (Number.isNaN(num) || num <= 0) num = 1;
-                matrixList[x][y].num = num
-            }
-            this.updateSelectList(x, y, num)
-            this.setData({
-                matrixList
-            })
-        },
+        // 单选
         checkboxChange(e: WechatMiniprogram.CustomEvent) {
             const value = e.detail.value
             const tempSelectList: selectListCFace[] = value.map((c: string) => {
@@ -202,14 +159,67 @@ Component<dataFace, any, any>({
             })
             this.checkIsSelectAll()
         },
-        changeMatrixNum(e: WechatMiniprogram.CustomEvent) {
-            var num = e.detail.value
-            const col = e.currentTarget.dataset.col;
-            if (num >= 999) num = 999;
-            if (num <= 1) num = 1;
-            const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
-            this.setMatrixListXY(pos.x, pos.y, num)
+
+        /*
+            表操作
+        */
+        // 获取数组中对应的镜片下标
+        getMatrixListXY(row: string, col: string): getXY {
+            const rowList = this.data.rowList
+            const colList = this.data.colList
+
+            if (rowList.length <= 0 || colList.length <= 0) return {
+                x: -1,
+                y: -1
+            }
+            const rowIndex = colList.indexOf(row)
+            const colIndex = rowList.indexOf(col)
+            return {
+                x: rowIndex,
+                y: colIndex
+            }
         },
+        // 设置表中的数量
+        setMatrixListXY(x: string, y: string, num: number = 1): void {
+            const matrixList = JSON.parse(JSON.stringify(this.data.matrixList))
+            if (matrixList[x] && matrixList[x][y]) {
+                num = Number(num)
+                if (Number.isNaN(num) || num <= 0) num = 1;
+                matrixList[x][y].num = num
+            }
+            this.updateSelectList(x, y, num)
+            this.setData({
+                matrixList
+            })
+        },
+        // 更新选择列表
+        updateSelectList(row: string, col: string, num: number | string): void {
+            const selectList = JSON.parse(JSON.stringify(this.data.selectList))
+            col = this.data.rowList[col]
+            row = this.data.colList[row]
+
+            const disposeList = selectList[col]
+
+            if (disposeList && Array.isArray(disposeList)) {
+
+                for (let index = 0; index < disposeList.length; index++) {
+                    const currentItem = disposeList[index];
+                    if (currentItem.row == row) {
+                        currentItem.num = num
+                        this.setData({
+                            selectList
+                        })
+                        return
+                    }
+                }
+
+            }
+        },
+
+        /*
+            切换
+        */
+        // 滑动切换
         binddragendHandle(e: WechatMiniprogram.CustomEvent) {
             if (this.data.sliderLock) {
                 this.setData({
@@ -232,6 +242,7 @@ Component<dataFace, any, any>({
             }
             this.checkIsSelectAll()
         },
+        // 点击切换
         sliderClickHandle(e: WechatMiniprogram.CustomEvent) {
             const idindex = e.currentTarget.dataset.idindex
             if (this.data.scrollIntoView == this.data.list[idindex].id) return;
@@ -243,14 +254,30 @@ Component<dataFace, any, any>({
             })
             this.checkIsSelectAll()
         },
-        add(e: WechatMiniprogram.CustomEvent): void {
+
+
+        /*
+            改变数量方式 
+        */
+        // input 改变二维表数量
+        changeMatrixNum(e: WechatMiniprogram.CustomEvent) {
+            var num = e.detail.value
+            const col = e.currentTarget.dataset.col;
+            if (num >= 999) num = 999;
+            if (num <= 1) num = 1;
+            const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
+            this.setMatrixListXY(pos.x, pos.y, num)
+        },
+        // 增加 改变二维表数量
+        addMatrixNum(e: WechatMiniprogram.CustomEvent): void {
             const col = e.currentTarget.dataset.col;
             const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
             const _currentNum: number | string = this.data.matrixList[pos.x][pos.y].num
             if (_currentNum >= 999) return;
             this.setMatrixListXY(pos.x, pos.y, Number(_currentNum) + 1)
         },
-        reduce(e: WechatMiniprogram.CustomEvent): void {
+        // 减少 改变二维表数量
+        reduceMatrixNum(e: WechatMiniprogram.CustomEvent): void {
             const col = e.currentTarget.dataset.col;
             const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
             const _currentNum: number | string = this.data.matrixList[pos.x][pos.y].num
