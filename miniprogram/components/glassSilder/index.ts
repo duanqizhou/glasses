@@ -17,7 +17,7 @@ interface dataFace {
     [x: string]: any
     list: listFace[] | [],
     selectList: selectListFace,
-    currentRow:string
+    currentRow: string
 }
 interface getXY {
     x: number
@@ -32,9 +32,9 @@ Component<dataFace, any, any>({
         matrixList: [],
         colList: ['0.00', '0.25', '0.50', '0.75', '1.00', '1.25'],
         rowList: ['0.00', '0.25', '0.50', '0.75', '1.00'],
-        selectListHead:[],
-        sliderLock:false,
-        selectAll:false
+        selectListHead: [],
+        sliderLock: false,
+        selectAll: false
 
     },
     lifetimes: {
@@ -43,37 +43,33 @@ Component<dataFace, any, any>({
         },
     },
     methods: {
-        selectAllHandle(e:WechatMiniprogram.CustomEvent){
+        selectAllHandle(e: WechatMiniprogram.CustomEvent) {
             const that = this;
             const value = e.detail.value[0]
             const selectList = JSON.parse(JSON.stringify(that.data.selectList))
             const selectListHead = that.data.selectListHead
-            if(value){
+            if (value) {
                 const _index = that.data.rowList.indexOf(value)
-                if(_index == -1) return;
-                const tempSelectList: selectListCFace[] = that.data.colList.map((val:string,key:number)=>({
-                    row:val,
-                    col:value,
-                    num:that.data.matrixList[key][_index].num,
+                if (_index == -1) return;
+                const tempSelectList: selectListCFace[] = that.data.colList.map((val: string, key: number) => ({
+                    row: val,
+                    col: value,
+                    num: that.data.matrixList[key][_index].num,
                     select: true,
                 }))
                 selectList[that.data.currentRow] = tempSelectList
                 selectListHead.push(that.data.currentRow)
-                that.setData({
-                    selectAll:true,
-                })
-            }else{
+            } else {
                 // 取消全选
                 selectList[that.data.currentRow] = []
-                selectListHead.splice(selectListHead.indexOf(that.data.currentRow),1)
-                that.setData({
-                    selectAll:false,
-                })
+                selectListHead.splice(selectListHead.indexOf(that.data.currentRow), 1)
+                that.checkIsSelectAll()
             }
             that.setData({
                 selectList,
-                selectListHead:[...new Set(selectListHead)]
+                selectListHead: [...new Set(selectListHead)]
             })
+            that.checkIsSelectAll()
         },
         InitData(): void {
             this.initSilderRow()
@@ -116,6 +112,20 @@ Component<dataFace, any, any>({
                 matrixList
             })
         },
+        checkIsSelectAll(): void {
+            const checkList = this.data.selectList[this.data.currentRow]
+            console.log(checkList,this.data.currentRow,this.data.selectList)
+            if (checkList && Array.isArray(checkList) && checkList.length == this.data.colList.length) {
+                this.setData({
+                    selectAll: true
+                })
+            } else {
+                this.setData({
+                    selectAll: false
+                })
+            }
+
+        },
         getMatrixListXY(row: string, col: string): getXY {
             const rowList = this.data.rowList
             const colList = this.data.colList
@@ -131,18 +141,18 @@ Component<dataFace, any, any>({
                 y: colIndex
             }
         },
-        updateSelectList(row: string, col: string,num:number|string):void{
+        updateSelectList(row: string, col: string, num: number | string): void {
             const selectList = JSON.parse(JSON.stringify(this.data.selectList))
             col = this.data.rowList[col]
             row = this.data.colList[row]
 
             const disposeList = selectList[col]
 
-            if(disposeList && Array.isArray(disposeList)){
+            if (disposeList && Array.isArray(disposeList)) {
 
                 for (let index = 0; index < disposeList.length; index++) {
                     const currentItem = disposeList[index];
-                    if(currentItem.row == row){
+                    if (currentItem.row == row) {
                         currentItem.num = num
                         this.setData({
                             selectList
@@ -157,13 +167,13 @@ Component<dataFace, any, any>({
             const matrixList = JSON.parse(JSON.stringify(this.data.matrixList))
             if (matrixList[x] && matrixList[x][y]) {
                 num = Number(num)
-                if(Number.isNaN(num) || num <= 0) num = 1;
+                if (Number.isNaN(num) || num <= 0) num = 1;
                 matrixList[x][y].num = num
-             }
-             this.updateSelectList(x,y,num)
-             this.setData({
+            }
+            this.updateSelectList(x, y, num)
+            this.setData({
                 matrixList
-             })
+            })
         },
         checkboxChange(e: WechatMiniprogram.CustomEvent) {
             const value = e.detail.value
@@ -188,21 +198,22 @@ Component<dataFace, any, any>({
             selectListHead.push(this.data.currentRow)
             this.setData({
                 selectList,
-                selectListHead:[...new Set(selectListHead)]
+                selectListHead: [...new Set(selectListHead)]
             })
+            this.checkIsSelectAll()
         },
         changeMatrixNum(e: WechatMiniprogram.CustomEvent) {
             var num = e.detail.value
             const col = e.currentTarget.dataset.col;
-            if(num >= 999) num = 999;
-            if(num <= 1) num = 1;
-            const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
-            this.setMatrixListXY(pos.x,pos.y,num)
+            if (num >= 999) num = 999;
+            if (num <= 1) num = 1;
+            const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
+            this.setMatrixListXY(pos.x, pos.y, num)
         },
         binddragendHandle(e: WechatMiniprogram.CustomEvent) {
-            if(this.data.sliderLock){
+            if (this.data.sliderLock) {
                 this.setData({
-                    sliderLock:false
+                    sliderLock: false
                 })
                 return
             }
@@ -215,36 +226,36 @@ Component<dataFace, any, any>({
                         scrollIntoView: list[index].id,
                         currentRow: list[index].text,
                         currentRowIndex: index,
-                        selectAll:false
+                        selectAll: false
                     })
                 }
             }
+            this.checkIsSelectAll()
         },
-        sliderClickHandle(e: WechatMiniprogram.CustomEvent){
+        sliderClickHandle(e: WechatMiniprogram.CustomEvent) {
             const idindex = e.currentTarget.dataset.idindex
-            if(this.data.scrollIntoView == this.data.list[idindex].id) return;
+            if (this.data.scrollIntoView == this.data.list[idindex].id) return;
             this.setData({
                 scrollIntoView: this.data.list[idindex].id,
                 currentRow: this.data.list[idindex].text,
                 currentRowIndex: idindex,
-                sliderLock:true,
-                selectAll:false
+                sliderLock: true,
             })
-
+            this.checkIsSelectAll()
         },
-        add(e: WechatMiniprogram.CustomEvent):void{
+        add(e: WechatMiniprogram.CustomEvent): void {
             const col = e.currentTarget.dataset.col;
-            const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
-            const _currentNum:number|string = this.data.matrixList[pos.x][pos.y].num
-            if(_currentNum >= 999) return;
-            this.setMatrixListXY(pos.x,pos.y,Number(_currentNum) + 1)
+            const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
+            const _currentNum: number | string = this.data.matrixList[pos.x][pos.y].num
+            if (_currentNum >= 999) return;
+            this.setMatrixListXY(pos.x, pos.y, Number(_currentNum) + 1)
         },
-        reduce(e: WechatMiniprogram.CustomEvent):void{
+        reduce(e: WechatMiniprogram.CustomEvent): void {
             const col = e.currentTarget.dataset.col;
-            const pos: getXY = this.getMatrixListXY(col,this.data.currentRow)
-            const _currentNum:number|string = this.data.matrixList[pos.x][pos.y].num
-            if(_currentNum <= 1) return;
-            this.setMatrixListXY(pos.x,pos.y,Number(_currentNum) - 1)
+            const pos: getXY = this.getMatrixListXY(col, this.data.currentRow)
+            const _currentNum: number | string = this.data.matrixList[pos.x][pos.y].num
+            if (_currentNum <= 1) return;
+            this.setMatrixListXY(pos.x, pos.y, Number(_currentNum) - 1)
         }
     }
 })
